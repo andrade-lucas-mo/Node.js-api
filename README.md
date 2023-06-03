@@ -2,7 +2,9 @@
 JWT Study with Node JS
 
 This code is using the framework NodeJS, to run this code in your machine, use the code below:
+
 npm init
-npm install --save express
+npm install
+npm start
 
 Make sure that you have the NodeJS alredy install in your computer
