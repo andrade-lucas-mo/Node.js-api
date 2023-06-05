@@ -2,7 +2,8 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors')
 
-const route = require('./routes/route')
+const users = require('./routes/users')
+const citys = require('./routes/citys')
 
 const app = express();
 
@@ -23,7 +24,8 @@ app.use((req, res, next) => {
     next();
 })
 
-app.use('/route', route)
+app.use('/users', users)
+app.use('/citys', citys)
 
 app.use((req, res, next) => {
     const error = new Error('Route Not Found');

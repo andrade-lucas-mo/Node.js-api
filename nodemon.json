@@ -1,10 +1,11 @@
 {
     "env": {
-        "MYSQL_USER":         "",
-        "MYSQL_PASSWORD":     "",
-        "MYSQL_DB":           "",
-        "MYSQL_HOST":         "",
-        "MYSQL_PORT":         "",
-        "PORT":             3000
+        "PORT": 3000,
+        "JWT_KEY": "gasoigq5296agjapAYyf137",
+        "MYSQL_USER": "root",
+        "MYSQL_PASSWORD": "root",
+        "MYSQL_DATABASE": "restapi",
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": 3306
     }
 }
