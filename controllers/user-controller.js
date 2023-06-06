@@ -1,86 +1,75 @@
-const mysql = require('../mysql').pool;
+const mysql = require('../mysql');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-exports.singinUser = (req, res, next) => {
-    mysql.getConnection((error, connection) => {
-        if(error) {return res.status(500).send({error: error})}
-        connection.query(
-            'SELECT * FROM users WHERE name = ?', [req.body.name], (error, result, field) => {
-                if(error) {return res.status(500).send({error: error})}
-                if(result.length > 0) {return res.status(401).send({message: "user alredy exist"})}
-                bcrypt.hash(req.body.password, 10, (errorBcrypt, hash) => {
-                    if(errorBcrypt) {return res.status(500).send({error: errorBcrypt})}
-                    connection.query(
-                        'INSERT INTO users (name,password) VALUES(?,?);',
-                        [req.body.name, hash],
-                        (error, result, field) => {
-                            connection.release();
-                            if(error) {return res.status(500).send({error: error})}
-                            const response = {
-                                message: "success",
-                                data: {
-                                    user: {
-                                        id: result.insertId,
-                                        name: req.body.name
-                                    },
-                                    request: {
-                                        type: 'POST',
-                                        desc: 'Create a new User',
-                                        url: req.protocol + '://' + req.get('host') + req.originalUrl,
-                                    }
-                                }
-                            }
-                            return res.status(201).send(response);
-                        }
-                    )
-                })
+exports.singinUser = async (req, res, next) => {
+    try {
+        const queryUsers = 'SELECT * FROM users WHERE name = ?;';
+        const usersSelect = await mysql.execute(
+            queryUsers,
+            [req.body.name]
+        );
+        if(usersSelect.length > 0){
+            return res.status(409).send({message: "user alredy exist"})
+        }
 
+        const hash = await bcrypt.hashSync(req.body.password, 10)
+
+        const queryInsert = 'INSERT INTO users (name,password) VALUES(?,?);';
+        const result = await mysql.execute(
+            queryInsert,
+            [req.body.name, hash]
+        );
+        const response = {
+            message: "success",
+            data: {
+                user: {
+                    id: result.insertId,
+                    name: req.body.name
+                },
+                request: {
+                    type: 'POST',
+                    desc: 'Create a new User',
+                    url: req.protocol + '://' + req.get('host') + req.originalUrl,
+                }
             }
-        )
-    });
+        }
+        return res.status(201).send(response);
+    } catch (error) {
+        return res.status(500).send({error: error})
+    }
 }
 
-exports.loginUser = (req, res, next) => {
-    mysql.getConnection((error, connection) => {
-        if(error) {return res.status(500).send({error: error})}
-        connection.query(
-            "SELECT * FROM users WHERE name = ?",
-            [req.body.name],
-            (error, result, fields) => {
-                connection.release();
-                if(error) {return res.status(500).send({error: error})}
-                if(result.length < 1) {
-                    return res.status(401).send({message: "Unauthorized login. Check your name and password"})
+exports.loginUser = async (req, res, next) => {
+    try {
+        const query = 'SELECT * FROM users WHERE name = ?;';
+        const result = await mysql.execute(
+            query,
+            [req.body.name]
+        );
+        if(result.length < 1) {
+            return res.status(401).send({message: "Unauthorized login. Check your name and password"})
+        }
+        if(await bcrypt.compare(req.body.password, result[0].password)){
+            const token = jwt.sign(
+                {
+                    id_users: result[0].id_users,
+                    name: result[0].name,
+                }, 
+                process.env.JWT_KEY,
+                {
+                    expiresIn: "1h"
                 }
-                bcrypt.compare(
-                    req.body.password,
-                    result[0].password,
-                    (errorBcrypt, resultBcrypt) => {
-                        if(errorBcrypt) {
-                            return res.status(401).send({message: "Unauthorized login. Check your name and password"})
-                        }
-                        if(resultBcrypt) {
-                            const token = jwt.sign(
-                                {
-                                    id_users: result[0].id_users,
-                                    name: result[0].name,
-                                }, 
-                                process.env.JWT_KEY,
-                                {
-                                    expiresIn: "1h"
-                                }
-                            )
-                            const response = {
-                                message: "Authorized",
-                                token: token
-                            };
-                            return res.status(200).send(response)
-                        }
-                        return res.status(401).send({message: "Unauthorized login. Check your name and password"})
-                    }
-                )
-            }
-        )
-    })
+            )
+            const response = {
+                message: "Authorized",
+                token: token
+            };
+            return res.status(200).send(response)
+        }
+        return res.status(401).send({message: "Unauthorized login. Check your name and password"})
+    } catch (error) {
+        return res.status(401).send({message: "Unauthorized login. Check your name and password"})
+    }
+
 }
