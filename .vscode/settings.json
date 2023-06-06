@@ -12,6 +12,19 @@
             "username": "root",
             "password": "root",
             "name": "restapi"
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "us-cdbr-east-06.cleardb.net",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "heroku",
+            "database": "heroku_829a5382f9e0d85",
+            "username": "b92201e83cf477",
+            "password": "f301e43d"
         }
     ]
 }
