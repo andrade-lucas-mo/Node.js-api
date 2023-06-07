@@ -5,6 +5,7 @@ const users = require('./routes/users')
 const citys = require('./routes/citys')
 const graph = require('./routes/graph')
 const search = require('./routes/search')
+const forest = require('./routes/forest')
 const app = express();
 
 app.use(morgan('dev'));
@@ -28,6 +29,7 @@ app.use('/users', users)
 app.use('/citys', citys)
 app.use('/graph', graph)
 app.use('/search', search)
+app.use('/forest', forest)
 
 app.use((req, res, next) => {
     const error = new Error('Route Not Found');

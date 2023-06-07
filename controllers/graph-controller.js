@@ -148,12 +148,14 @@ exports.getSubGraph  = async (req, res, next) => {
             const name_citys = citys.map(city => {
                 return city.name
             })
-            params.push(name_citys)
-            params.push(name_citys)
-            where += `
-                AND graph.name NOT IN (?)
-                AND graph.edge NOT IN (?)
-            `
+            if(name_citys.length !== 0){
+                params.push(name_citys)
+                params.push(name_citys)
+                where += `
+                    AND graph.name NOT IN (?)
+                    AND graph.edge NOT IN (?)
+                `
+            }
         }
 
         if(req.body.edges && req.body.edges.length !== 0){
