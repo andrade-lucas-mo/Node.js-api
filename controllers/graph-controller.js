@@ -71,22 +71,29 @@ exports.createGraph = async (req, res, next) => {
     }
 }
 
-exports.getGraph  = async (req, res, next) => {
+exports.getNodeData  = async (req, res, next) => {
     try {
+        var where = '';
+        if(req.params.vertex){
+            where = 'WHERE citys.id_citys = ?'
+        }
         const query = 
             `SELECT
-                citys.name AS name,
+                citys.id_citys,
+                citys.name,
                 CASE
                     WHEN citys.name = edge.from
                         THEN edge.to
                     ELSE edge.from
                 END AS edge,
-                edge.weight AS weight
+                edge.id_edge,
+                edge.weight
             FROM citys
             INNER JOIN edge
                 ON edge.from = citys.name OR edge.to = citys.name
+            ${where}
             ORDER BY citys.name;`;
-        const edges = await mysql.execute(query);
+        const edges = await mysql.execute(query, [req.params.vertex]);
 
         var graph = []
 
@@ -95,6 +102,7 @@ exports.getGraph  = async (req, res, next) => {
                 var edg = edges.map(edg => {
                     if(edg.name === edge.name){
                         return {
+                            id_edge: edg.id_edge,
                             to: edg.edge,
                             weight: edg.weight
                         }
@@ -102,7 +110,9 @@ exports.getGraph  = async (req, res, next) => {
                 })
                 edg = edg.filter(function (i) {return i;});
                 graph.push({
+                    id_node: edge.id_citys,
                     node: edge.name,
+                    degree: edg.length,
                     edges: edg
                 })
             }
@@ -113,7 +123,94 @@ exports.getGraph  = async (req, res, next) => {
                 graph: graph,
                 request: {
                     type: 'GET',
-                    desc: 'get the complete graph',
+                    desc: 'get the node data',
+                    url: req.protocol + '://' + req.get('host') + req.originalUrl,
+                }
+            }
+        }
+
+        return res.status(201).send(response);
+    } catch (error) {
+        return res.status(500).send({error: error})
+    }
+}
+
+exports.getSubGraph  = async (req, res, next) => {
+    try {
+        const params = []
+        let where = 'WHERE 1 = 1';
+        if(req.body.vertex && req.body.vertex.length !== 0){
+            const querycitys = 
+            `SELECT *
+            FROM citys
+            WHERE id_citys IN (?)`;
+            const citys = await mysql.execute(querycitys, [req.body.vertex]);
+            const name_citys = citys.map(city => {
+                return city.name
+            })
+            params.push(name_citys)
+            params.push(name_citys)
+            where += `
+                AND graph.name NOT IN (?)
+                AND graph.edge NOT IN (?)
+            `
+        }
+
+        if(req.body.edges && req.body.edges.length !== 0){
+            params.push(req.body.edges)
+            where += `
+                AND graph.id_edge NOT IN (?)
+            `
+        }
+
+        const query = 
+            `SELECT * FROM
+            (SELECT
+                citys.id_citys,
+                citys.name,
+                CASE
+                    WHEN citys.name = edge.from
+                        THEN edge.to
+                    ELSE edge.from
+                END AS edge,
+                edge.id_edge,
+                edge.weight
+            FROM citys
+            INNER JOIN edge
+                ON (edge.from = citys.name OR edge.to = citys.name)
+            ORDER BY citys.name) graph
+            ${where};`;
+        const edges = await mysql.execute(query, params);
+
+        var graph = []
+
+        edges.forEach(edge => {
+            if(graph.findIndex(val => val.node === edge.name) < 0){
+                var edg = edges.map(edg => {
+                    if(edg.name === edge.name){
+                        return {
+                            id_edge: edg.id_edge,
+                            to: edg.edge,
+                            weight: edg.weight
+                        }
+                    }
+                })
+                edg = edg.filter(function (i) {return i;});
+                graph.push({
+                    id_node: edge.id_citys,
+                    node: edge.name,
+                    degree: edg.length,
+                    edges: edg
+                })
+            }
+        });
+        const response = {
+            message: "success",
+            data: {
+                graph: graph,
+                request: {
+                    type: 'GET',
+                    desc: 'get the node data',
                     url: req.protocol + '://' + req.get('host') + req.originalUrl,
                 }
             }

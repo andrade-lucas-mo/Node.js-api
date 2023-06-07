@@ -4,6 +4,7 @@ const cors = require('cors')
 const users = require('./routes/users')
 const citys = require('./routes/citys')
 const graph = require('./routes/graph')
+const search = require('./routes/search')
 const app = express();
 
 app.use(morgan('dev'));
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 app.use('/users', users)
 app.use('/citys', citys)
 app.use('/graph', graph)
+app.use('/search', search)
 
 app.use((req, res, next) => {
     const error = new Error('Route Not Found');
