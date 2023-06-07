@@ -2,7 +2,7 @@ const mysql = require('../mysql');
 
 exports.createCitys = async (req, res, next) => {
     try {
-        const queryDelete = 'DELETE FROM citys WHERE id_citys IS NOT NULL;';
+        const queryDelete = 'DELETE FROM citys;';
         await mysql.execute(queryDelete);
 
         const citys = req.body.citys.map(city => [
@@ -12,7 +12,7 @@ exports.createCitys = async (req, res, next) => {
         ])
 
         const queryInsert = 'INSERT INTO citys (citys.lat,citys.long,citys.name) VALUES ?;';
-        const result = await mysql.execute(
+        await mysql.execute(
             queryInsert,
             [citys]
         );
