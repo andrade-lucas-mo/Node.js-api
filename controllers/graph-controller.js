@@ -151,6 +151,7 @@ exports.getSubGraph  = async (req, res, next) => {
     try {
         const params = []
         let where = 'WHERE 1 = 1';
+        let left = ''
         if(req.body.node && req.body.node.length !== 0){
             const querycitys = 
             `SELECT *
@@ -172,8 +173,8 @@ exports.getSubGraph  = async (req, res, next) => {
 
         if(req.body.edges && req.body.edges.length !== 0){
             params.push(req.body.edges)
-            where += `
-                AND graph.id_edge NOT IN (?)
+            left = `
+                AND edge.id_edge NOT IN (?)
             `
         }
 
@@ -190,8 +191,8 @@ exports.getSubGraph  = async (req, res, next) => {
                 edge.id_edge,
                 edge.weight
             FROM citys
-            INNER JOIN edge
-                ON (edge.from = citys.name OR edge.to = citys.name)
+            LEFT JOIN edge
+                ON (edge.from = citys.name OR edge.to = citys.name) ${left}
             ORDER BY citys.name) graph
             ${where};`;
         const edges = await mysql.execute(query, params);
@@ -200,20 +201,23 @@ exports.getSubGraph  = async (req, res, next) => {
 
         edges.forEach(edge => {
             if(graph.findIndex(val => val.node === edge.name) < 0){
-                var edg = edges.map(edg => {
-                    if(edg.name === edge.name){
-                        return {
-                            id_edge: edg.id_edge,
-                            to: edg.edge,
-                            weight: edg.weight
+                var edg = null;
+                if(edge.edge !== null){
+                    edg = edges.map(edg => {
+                        if(edg.name === edge.name){
+                            return {
+                                id_edge: edg.id_edge,
+                                to: edg.edge,
+                                weight: edg.weight
+                            }
                         }
-                    }
-                })
-                edg = edg.filter(function (i) {return i;});
+                    })
+                    edg = edg.filter(function (i) {return i;});
+                }
                 graph.push({
                     id_node: edge.id_citys,
                     node: edge.name,
-                    degree: edg.length,
+                    degree: edg ? edg.length : 0,
                     edges: edg
                 })
             }
