@@ -56,12 +56,12 @@ exports.createGraph = async (req, res, next) => {
         const response = {
             message: "success",
             data: {
-                edges: edgeList,
-                request: {
-                    type: 'POST',
-                    desc: 'Create a new graph base on citys',
-                    url: req.protocol + '://' + req.get('host') + req.originalUrl + '/create',
-                }
+                edges: edgeList
+            },
+            request: {
+                type: 'POST',
+                desc: 'Create a new graph base on citys',
+                url: req.protocol + '://' + req.get('host') + req.originalUrl + '/create',
             }
         }
 
@@ -74,7 +74,7 @@ exports.createGraph = async (req, res, next) => {
 exports.getNodeData  = async (req, res, next) => {
     try {
         var where = '';
-        if(req.params.vertex){
+        if(req.params.node){
             where = 'WHERE citys.id_citys = ?'
         }
         const query = 
@@ -93,7 +93,7 @@ exports.getNodeData  = async (req, res, next) => {
                 ON edge.from = citys.name OR edge.to = citys.name
             ${where}
             ORDER BY citys.name;`;
-        const edges = await mysql.execute(query, [req.params.vertex]);
+        const edges = await mysql.execute(query, [req.params.node]);
 
         var graph = []
 
@@ -120,16 +120,16 @@ exports.getNodeData  = async (req, res, next) => {
         const response = {
             message: "success",
             data: {
-                graph: graph,
-                request: {
-                    type: 'GET',
-                    desc: 'get the node data',
-                    url: req.protocol + '://' + req.get('host') + req.originalUrl,
-                }
+                graph: graph
+            },
+            request: {
+                type: 'GET',
+                desc: 'get the complete graph or a specific node data',
+                url: req.protocol + '://' + req.get('host') + req.originalUrl,
             }
         }
 
-        return res.status(201).send(response);
+        return res.status(200).send(response);
     } catch (error) {
         return res.status(500).send({error: error})
     }
@@ -139,12 +139,12 @@ exports.getSubGraph  = async (req, res, next) => {
     try {
         const params = []
         let where = 'WHERE 1 = 1';
-        if(req.body.vertex && req.body.vertex.length !== 0){
+        if(req.body.node && req.body.node.length !== 0){
             const querycitys = 
             `SELECT *
             FROM citys
             WHERE id_citys IN (?)`;
-            const citys = await mysql.execute(querycitys, [req.body.vertex]);
+            const citys = await mysql.execute(querycitys, [req.body.node]);
             const name_citys = citys.map(city => {
                 return city.name
             })
@@ -209,16 +209,16 @@ exports.getSubGraph  = async (req, res, next) => {
         const response = {
             message: "success",
             data: {
-                graph: graph,
-                request: {
-                    type: 'GET',
-                    desc: 'get the node data',
-                    url: req.protocol + '://' + req.get('host') + req.originalUrl,
-                }
+                graph: graph
+            },
+            request: {
+                type: 'POST',
+                desc: 'get the subgraph without the nodes and edges in the body',
+                url: req.protocol + '://' + req.get('host') + req.originalUrl,
             }
         }
 
-        return res.status(201).send(response);
+        return res.status(200).send(response);
     } catch (error) {
         return res.status(500).send({error: error})
     }

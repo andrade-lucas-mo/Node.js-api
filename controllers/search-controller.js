@@ -1,87 +1,49 @@
 const mysql = require('../mysql');
 
-var time = 0;
-
-let forest = []
-let root = 0;
-
-function visitaAresta(v,w,type)
-{
-    var tree = forest[forest.findIndex(edge => edge.node === v.vertex)];
-    tree.edges[tree.edges.findIndex(edge => edge.to === w.vertex)].type = type;
-    tree.degree = tree.edges.filter((edge)=>{
-        return edge.type == 'arvore'
-    }).length
-    if(root === 0){
-        tree.root = true;
-        root = 1;
-    }
-    tree = forest[forest.findIndex(edge => edge.node === w.vertex)];
-    tree.edges[tree.edges.findIndex(edge => edge.to === v.vertex)].type = type;
-    tree.degree = tree.edges.filter((edge)=>{
-        return edge.type == 'arvore'
-    }).length
-}
-
 exports.searchDepth = async (req, res, next) => {
     try {
         time = 0
         const query = 'SELECT citys.* FROM citys;';
-        const vertices = await mysql.execute(query);
+        const nodes = await mysql.execute(query);
         const edges = await getEdgesData();
         root = 0;
         forest = edges.graph;
-        var depth = vertices.map(vertex => {
+        var depth = nodes.map(node => {
             return {
-                id_vertex: vertex.id_citys,
-                vertex: vertex.name,
+                id_node: node.id_citys,
+                node: node.name,
                 father: null,
                 td: 0,
                 tt: 0
             }
         });
-        while (depth.some(vertex => vertex.td === 0)) {
-            newDepth = depthSearch(depth, edges, depth[depth.findIndex(vertex => vertex.td === 0)])
+        while (depth.some(node => node.td === 0)) {
+            newDepth = depthSearch(depth, edges, depth[depth.findIndex(node => node.td === 0)])
             newDepth.forEach(element => {
-                var index = depth.findIndex(vertex => vertex.id_vertex === element.id_vertex)
+                var index = depth.findIndex(node => node.id_node === element.id_node)
                 depth[index].father = element.father
                 depth[index].td = element.td
                 depth[index].tt = element.tt
             });
         }
         
-        return res.status(201).send({depth, forest});
+        const response = {
+            message: "success",
+            data: {
+                depth: depth,
+                forest: forest
+            },
+            request: {
+                type: 'GET',
+                desc: 'Get a complete search on depth based on citys',
+                url: req.protocol + '://' + req.get('host') + req.originalUrl ,
+            }
+        }
+
+        return res.status(200).send(response);
     } catch (error) {
         return res.status(500).send({error: error})
     }
-}
-
-function depthSearch(vertices, edges, v)
-{
-    time++;
-    v = vertices[vertices.findIndex(vertex => vertex.id_vertex === v.id_vertex)];
-    v.td = time
-    var edgesV = edges.graph[edges.graph.findIndex(edge => edge.id_node === v.id_vertex)].edges
-    edgesV.forEach(edgeV => {
-        let w = vertices[vertices.findIndex(vertex => vertex.vertex === edgeV.to)];
-        if(w.td === 0){
-            visitaAresta(v, w, 'arvore')
-            w.father = v.vertex
-            let newDepth = depthSearch(vertices, edges, w)
-            newDepth.forEach(element => {
-                var index = vertices.findIndex(vertex => vertex.id_vertex === element.id_vertex)
-                vertices[index].father = element.father
-                vertices[index].td = element.td
-                vertices[index].tt = element.tt
-            });
-            
-        }else if(w.tt === 0 && w.vertex !== v.father){
-            visitaAresta(v, w, 'retorno')
-        }
-    });
-    time++;
-    v.tt = time;
-    return vertices
 }
 
 exports.searchBreadthFirst = async (req, res, next) => {
@@ -89,53 +51,70 @@ exports.searchBreadthFirst = async (req, res, next) => {
         let t = 0;
         let line = [];
         const query = 'SELECT citys.* FROM citys;';
-        const vertices = await mysql.execute(query);
+        const nodes = await mysql.execute(query);
         const edges = await getEdgesData();
         root = 0;
         forest = edges.graph;
 
-        var breadthFirst = vertices.map(vertex => {
+        var breadthFirst = nodes.map(node => {
             return {
-                id_vertex: vertex.id_citys,
-                vertex: vertex.name,
+                id_node: node.id_citys,
+                node: node.name,
                 father: null,
                 td: 0,
                 tt: 0
             }
         });
-        while (breadthFirst.some(vertex => vertex.td === 0)) {
-            var vertex = breadthFirst[breadthFirst.findIndex(vertex => vertex.td === 0)]
+        while (breadthFirst.some(node => node.td === 0)) {
+            var node = breadthFirst[breadthFirst.findIndex(node => node.td === 0)]
             t++;
-            vertex.td = t;
-            line.push(vertex)
+            node.td = t;
+            line.push(node)
             while (line.length !== 0) {
-                vertex = breadthFirst[breadthFirst.findIndex(vertex => vertex.vertex === line[0].vertex)]
+                node = breadthFirst[breadthFirst.findIndex(node => node.node === line[0].node)]
                 line.shift()
                 var siblings = edges.graph.filter(function(edgeData){
-                    return (edgeData.id_node === vertex.id_vertex);
+                    return (edgeData.id_node === node.id_node);
                 })[0].edges;
                 siblings.forEach(sibling => {
-                    var index = breadthFirst.findIndex(vertexSibling => vertexSibling.vertex === sibling.to)
+                    var index = breadthFirst.findIndex(nodeSibling => nodeSibling.node === sibling.to)
                     if(breadthFirst[index].td === 0){
-                        visitaAresta(vertex, breadthFirst[index], 'arvore')
-                        breadthFirst[index].father = vertex.vertex
+                        visitaAresta(node, breadthFirst[index], 'arvore')
+                        breadthFirst[index].father = node.node
                         t++;
                         breadthFirst[index].td = t
                         line.push(breadthFirst[index])
-                    }else if(breadthFirst[index].tt === 0 && breadthFirst[index].vertex !== vertex.father){
-                        visitaAresta(vertex, breadthFirst[index], 'retorno')
+                    }else if(breadthFirst[index].tt === 0 && breadthFirst[index].node !== node.father){
+                        visitaAresta(node, breadthFirst[index], 'retorno')
                     }
                 });
                 t++;
-                vertex.tt = t;
+                node.tt = t;
             }
         }
-        
-        return res.status(201).send({breadthFirst, forest});
+
+        const response = {
+            message: "success",
+            data: {
+                breadthFirst: breadthFirst,
+                forest: forest
+            },
+            request: {
+                type: 'GET',
+                desc: 'Get a complete search on breadth first based on citys',
+                url: req.protocol + '://' + req.get('host') + req.originalUrl,
+            }
+        }
+
+        return res.status(200).send(response);
     } catch (error) {
         return res.status(500).send({error: error})
     }
 }
+
+var time = 0;
+let forest = []
+let root = 0;
 
 async function getEdgesData(){
     try {
@@ -183,4 +162,50 @@ async function getEdgesData(){
         return error
     }
     
+}
+
+function depthSearch(nodes, edges, v)
+{
+    time++;
+    v = nodes[nodes.findIndex(node => node.id_node === v.id_node)];
+    v.td = time
+    var edgesV = edges.graph[edges.graph.findIndex(edge => edge.id_node === v.id_node)].edges
+    edgesV.forEach(edgeV => {
+        let w = nodes[nodes.findIndex(node => node.node === edgeV.to)];
+        if(w.td === 0){
+            visitaAresta(v, w, 'arvore')
+            w.father = v.node
+            let newDepth = depthSearch(nodes, edges, w)
+            newDepth.forEach(element => {
+                var index = nodes.findIndex(node => node.id_node === element.id_node)
+                nodes[index].father = element.father
+                nodes[index].td = element.td
+                nodes[index].tt = element.tt
+            });
+            
+        }else if(w.tt === 0 && w.node !== v.father){
+            visitaAresta(v, w, 'retorno')
+        }
+    });
+    time++;
+    v.tt = time;
+    return nodes
+}
+
+function visitaAresta(v,w,type)
+{
+    var tree = forest[forest.findIndex(edge => edge.node === v.node)];
+    tree.edges[tree.edges.findIndex(edge => edge.to === w.node)].type = type;
+    tree.degree = tree.edges.filter((edge)=>{
+        return edge.type == 'arvore'
+    }).length
+    if(root === 0){
+        tree.root = true;
+        root = 1;
+    }
+    tree = forest[forest.findIndex(edge => edge.node === w.node)];
+    tree.edges[tree.edges.findIndex(edge => edge.to === v.node)].type = type;
+    tree.degree = tree.edges.filter((edge)=>{
+        return edge.type == 'arvore'
+    }).length
 }

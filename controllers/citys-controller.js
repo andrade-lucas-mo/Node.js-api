@@ -21,12 +21,12 @@ exports.createCitys = async (req, res, next) => {
             data: {
                 citys: req.body.citys.map(city => {
                     return {name: city.city}
-                }),
-                request: {
-                    type: 'POST',
-                    desc: 'Create a new City',
-                    url: req.protocol + '://' + req.get('host') + req.originalUrl,
-                }
+                })
+            },
+            request: {
+                type: 'POST',
+                desc: 'Create a new City',
+                url: req.protocol + '://' + req.get('host') + req.originalUrl,
             }
         }
         return res.status(201).send(response);
@@ -50,12 +50,12 @@ exports.getCitys = async (req, res, next) => {
                         lng: city.long,
                         lat: city.lat,
                     }
-                }),
-                request: {
-                    type: 'GET',
-                    desc: 'get all Citys',
-                    url: req.protocol + '://' + req.get('host') + req.originalUrl,
-                }
+                })
+            },
+            request: {
+                type: 'GET',
+                desc: 'get all Citys',
+                url: req.protocol + '://' + req.get('host') + req.originalUrl,
             }
         }
         return res.status(200).send(response);
