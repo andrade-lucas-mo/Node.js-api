@@ -7,4 +7,6 @@ npm init
 npm install
 npm start
 
-Make sure that you have the NodeJS alredy install in your computer
+Make sure that you have the NodeJS alredy install in your computer, the RestAPI will be working on localhost:3000
+
+you can also use the url https://restapi-andrade.herokuapp.com to access the RestAPI
