@@ -8,7 +8,7 @@ exports.createCitys = async (req, res, next) => {
         const citys = req.body.citys.map(city => [
             parseFloat(city.lat),
             parseFloat(city.lng),
-            city.city
+            city.city + ' - ' + city.admin_name
         ])
 
         const queryInsert = 'INSERT INTO citys (citys.lat,citys.long,citys.name) VALUES ?;';
@@ -20,7 +20,7 @@ exports.createCitys = async (req, res, next) => {
             message: "success",
             data: {
                 citys: req.body.citys.map(city => {
-                    return {name: city.city}
+                    return {name: city.city + ' - ' + city.admin_name}
                 })
             },
             request: {

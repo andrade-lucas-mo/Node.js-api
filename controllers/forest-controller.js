@@ -44,6 +44,9 @@ exports.minimumTree = async (req, res, next) => {
                     && (!edgesTree.includes(edge.id_edge))
                 )
             })
+            if(possibleEdges.length === 0){
+                break;
+            }
             var minEdge = possibleEdges.reduce(function(prev, current) { 
                 return prev.weight < current.weight ? prev : current; 
             });
@@ -59,6 +62,10 @@ exports.minimumTree = async (req, res, next) => {
             return sum + (item.weight);
         }, 0);
 
+        const primTreeNodes = primTree.filter((node) => {
+            return nodesTree.includes(node.id_node)
+        }, 0);
+
         const response = {
             message: "success",
             data: {
@@ -71,7 +78,7 @@ exports.minimumTree = async (req, res, next) => {
                         weight: edge.weight
                     }
                 }),
-                nodes: primTree
+                nodes: primTreeNodes
             },
             request: {
                 type: 'GET',
