@@ -56,7 +56,19 @@ exports.createGraph = async (req, res, next) => {
         const response = {
             message: "success",
             data: {
-                edges: edgeList
+                edges: edgeList.map( (edge) => {
+                    return {
+                        fromNode: edge[0],
+                        toNode: edge[1],
+                        weight: edge[2]
+                    }
+                }),
+                nodes: citys.map((city) => {
+                    return {
+                        id_node: city.id_citys,
+                        name: city.name
+                    }
+                }),
             },
             request: {
                 type: 'POST',
