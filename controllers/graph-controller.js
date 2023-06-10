@@ -152,6 +152,14 @@ exports.getSubGraph  = async (req, res, next) => {
         const params = []
         let where = 'WHERE 1 = 1';
         let left = ''
+
+        if(req.body.edges && req.body.edges.length !== 0){
+            params.push(req.body.edges)
+            left = `
+                AND edge.id_edge NOT IN (?)
+            `
+        }
+        
         if(req.body.node && req.body.node.length !== 0){
             const querycitys = 
             `SELECT *
@@ -169,13 +177,6 @@ exports.getSubGraph  = async (req, res, next) => {
                     AND graph.edge NOT IN (?)
                 `
             }
-        }
-
-        if(req.body.edges && req.body.edges.length !== 0){
-            params.push(req.body.edges)
-            left = `
-                AND edge.id_edge NOT IN (?)
-            `
         }
 
         const query = 
