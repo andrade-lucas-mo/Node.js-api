@@ -1,0 +1,267 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Graph RestAPI with NodeJS",
+        "description": "University work for graphs using RestAPI and JWT, only for personal study",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://restapi-andrade.herokuapp.com",
+            "description": "Herokyu url"
+        },
+        {
+            "url": "http://localhost:3000",
+            "description": "LocalHost running in your own computer"
+        }
+    ],
+    "paths": {
+        "/users/singin": {
+            "post": {
+                "summary": "Create a new User",
+                "tags": ["Users"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/user"
+                            },
+                            "examples": {
+                                "user": {
+                                    "value": {
+                                        "name": "andrade-lucas-mo",
+                                        "password": "secret-password"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "409": {
+                        "description": "user alredy exist"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "201": {
+                        "description": "User Created"
+                    }
+                }
+            }
+        },
+        "/users/login": {
+            "post": {
+                "summary": "Login with a already created user",
+                "tags": ["Users"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/user"
+                            },
+                            "examples": {
+                                "user": {
+                                    "value": {
+                                        "name": "andrade-lucas-mo",
+                                        "password": "secret-password"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized login. Check your name and password"
+                    },
+                    "200": {
+                        "description": "Login success"
+                    }
+                }
+            }
+        },
+        "/citys/create": {
+            "post": {
+                "summary": "Create dataBase with cities name",
+                "tags": ["Cities"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "citys": {
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/components/schemas/city"
+                                        }
+                                    }
+                                }
+                            },
+                            "examples": {
+                                "citys": {
+                                    "value": {
+                                        "citys": [
+                                            {
+                                                "city": "São Paulo", 
+                                                "lat": "-23.5500", 
+                                                "lng": "-46.6333", 
+                                                "country": "Brazil", 
+                                                "iso2": "BR", 
+                                                "admin_name": "São Paulo", 
+                                                "capital": "admin", 
+                                                "population": "23086000", 
+                                                "population_proper": "12252023"
+                                            }, 
+                                            {
+                                                "city": "Rio de Janeiro", 
+                                                "lat": "-22.9111", 
+                                                "lng": "-43.2056", 
+                                                "country": "Brazil", 
+                                                "iso2": "BR", 
+                                                "admin_name": "Rio de Janeiro", 
+                                                "capital": "admin", 
+                                                "population": "12592000", 
+                                                "population_proper": "6520000"
+                                            }, 
+                                            {
+                                                "city": "Belo Horizonte", 
+                                                "lat": "-19.9167", 
+                                                "lng": "-43.9333", 
+                                                "country": "Brazil", 
+                                                "iso2": "BR", 
+                                                "admin_name": "Minas Gerais", 
+                                                "capital": "admin", 
+                                                "population": "5328000", 
+                                                "population_proper": "2502557"
+                                            }, 
+                                            {
+                                                "city": "Brasília", 
+                                                "lat": "-15.7939", 
+                                                "lng": "-47.8828", 
+                                                "country": "Brazil", 
+                                                "iso2": "BR", 
+                                                "admin_name": "Distrito Federal", 
+                                                "capital": "primary", 
+                                                "population": "3039444", 
+                                                "population_proper": "3015268"
+                                            }, 
+                                            {
+                                                "city": "Salvador", 
+                                                "lat": "-12.9747", 
+                                                "lng": "-38.4767", 
+                                                "country": "Brazil", 
+                                                "iso2": "BR", 
+                                                "admin_name": "Bahia", 
+                                                "capital": "admin", 
+                                                "population": "2886698", 
+                                                "population_proper": "2886698"
+                                            }, 
+                                            {
+                                                "city": "Fortaleza", 
+                                                "lat": "-3.7275", 
+                                                "lng": "-38.5275", 
+                                                "country": "Brazil", 
+                                                "iso2": "BR", 
+                                                "admin_name": "Ceará", 
+                                                "capital": "admin", 
+                                                "population": "2452185", 
+                                                "population_proper": "2452185"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "201": {
+                        "description": "Cities Created"
+                    }
+                }
+            }
+        },
+        "/citys": {
+            "get": {
+                "summary": "Get all cities Data",
+                "tags": ["Cities"],
+                "security": [{"bearerAuth": []}],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "citys": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/city"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    
+    "components": {
+        "schemas": {
+            "user": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "city": {
+                "type": "object",
+                "properties": {
+                    "city": {
+                        "type": "string"
+                    },
+                    "lat": {
+                        "type": "string"
+                    },
+                    "lng": {
+                        "type": "string"
+                    },
+                    "admin_name": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}

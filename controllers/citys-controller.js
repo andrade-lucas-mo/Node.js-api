@@ -54,7 +54,7 @@ exports.getCitys = async (req, res, next) => {
             },
             request: {
                 type: 'GET',
-                desc: 'get all Citys',
+                desc: 'get all Cities',
                 url: req.protocol + '://' + req.get('host') + req.originalUrl,
             }
         }

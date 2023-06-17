@@ -7,7 +7,10 @@ const graph = require('./routes/graph')
 const search = require('./routes/search')
 const forest = require('./routes/forest')
 const path = require('./routes/path')
+const swaggerUi = require('swagger-ui-express');
 const app = express();
+
+const swaggerDocs = require('./swagger.json');
 
 app.use(morgan('dev'));
 
@@ -25,6 +28,8 @@ app.use((req, res, next) => {
     app.use(cors(corsOptions))
     next();
 })
+
+app.use('/api-doc', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 app.use('/users', users)
 app.use('/citys', citys)
