@@ -7,10 +7,6 @@
     },
     "servers": [
         {
-            "url": "https://restapi-andrade.herokuapp.com",
-            "description": "Herokyu url"
-        },
-        {
             "url": "http://localhost:3000",
             "description": "LocalHost running in your own computer"
         }
@@ -222,6 +218,211 @@
                     }
                 }
             }
+        },
+        "/graph/create": {
+            "post": {
+                "summary": "Create dataBase with nodes between citys to form a graph",
+                "tags": ["Graphs"],
+                "security": [{"bearerAuth": []}],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "201": {
+                        "description": "Create a new graph base on citys"
+                    }
+                }
+            }
+        },
+        "/graph/": {
+            "get": {
+                "summary": "Get nodes data",
+                "tags": ["Graphs"],
+                "security": [{"bearerAuth": []}],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "201": {
+                        "description": "Get the complete graph data"
+                    }
+                }
+            }
+        },
+        "/graph/{node}": {
+            "get": {
+                "summary": "Get nodes data",
+                "tags": ["Graphs"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "node",
+                        "in": "path",
+                        "required": true,
+                        "description": "The node ID",
+                        "examples": {
+                            "nodeId": {
+                                "value": 331
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "201": {
+                        "description": "Get a specific node data"
+                    }
+                }
+            }
+        },
+        "/graph/sub-graph": {
+            "post": {
+                "summary": "Create a subGraph based on nodes and edges ids",
+                "tags": ["Graphs"],
+                "security": [{"bearerAuth": []}],
+                "requestBody":
+                {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/sub-graph"
+                            },
+                            "examples": {
+                                "sub-graph": {
+                                    "value": {
+                                        "node": [331],
+                                        "edges": [66, 77]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "201": {
+                        "description": "Get the subgraph without the nodes and edges in the body"
+                    }
+                }
+            }
+        },
+        "/search/breadth-first": {
+            "get": {
+                "summary": "Get a complete search on breadth first based on citys",
+                "tags": ["Search"],
+                "security": [{"bearerAuth": []}],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "201": {
+                        "description": "Get a complete search on breadth first based on citys"
+                    }
+                }
+            }
+        },
+        "/search/depth": {
+            "get": {
+                "summary": "Get a complete search on depth based on citys",
+                "tags": ["Search"],
+                "security": [{"bearerAuth": []}],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "201": {
+                        "description": "Get a complete search on depth based on citys"
+                    }
+                }
+            }
+        },
+        "/path/shortest": {
+            "post": {
+                "summary": "Shortest Path using Dijkstra method",
+                "tags": ["Path"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/shortest"
+                            },
+                            "examples": {
+                                "user": {
+                                    "value": {
+                                        "initNode": 331,
+                                        "endNode": 328
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "201": {
+                        "description": "Shortest Path using Dijkstra method"
+                    }
+                }
+            }
+        },
+        "/forest/minimum-tree/{node}": {
+            "get": {
+                "summary": "Get Minimum tree by Prim method",
+                "tags": ["Forest"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "node",
+                        "in": "path",
+                        "required": true,
+                        "description": "The node ID",
+                        "examples": {
+                            "nodeId": {
+                                "value": 331
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized token"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    },
+                    "201": {
+                        "description": "Get a Minimum tree by Prim method"
+                    }
+                }
+            }
         }
     },
     
@@ -252,6 +453,34 @@
                     },
                     "admin_name": {
                         "type": "string"
+                    }
+                }
+            },
+            "sub-graph": {
+                "type": "object",
+                "properties": {
+                    "node": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    },
+                    "edges": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            },
+            "shortest": {
+                "type": "object",
+                "properties": {
+                    "initNode": {
+                        "type": "integer"
+                    },
+                    "endNode": {
+                        "type": "integer"
                     }
                 }
             }

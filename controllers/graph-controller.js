@@ -72,7 +72,7 @@ exports.createGraph = async (req, res, next) => {
             },
             request: {
                 type: 'POST',
-                desc: 'Create a new graph base on citys',
+                desc: 'Created a new graph base on citys',
                 url: req.protocol + '://' + req.get('host') + req.originalUrl + '/create',
             }
         }
