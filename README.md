@@ -1,14 +1,12 @@
-# RestAPI
-JWT Study with Node JS
+# JWT Study with Node.js
 
-This code is using the framework NodeJS, to run this code in your machine, use the code below:
+This code uses Node.js. To run this code on your machine, follow the steps below:
 
-npm init;
-
+```bash
 npm install;
-
 npm start;
+```
 
-Make sure that you have the NodeJS alredy install in your computer, the RestAPI will be working on localhost:3000
+Make sure that you have Node.js already installed on your computer. The RestAPI will be working at localhost:3000.
 
-to access the swagger documentation, use the url https: http://localhost:3000/api-doc/
+To access the Swagger documentation, use the URL: http://localhost:3000/api-doc/
