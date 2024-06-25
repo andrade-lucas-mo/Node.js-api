@@ -12,7 +12,7 @@
         }
     ],
     "paths": {
-        "/users/singin": {
+        "/user/singin": {
             "post": {
                 "summary": "Create a new User",
                 "tags": ["Users"],
@@ -46,7 +46,7 @@
                 }
             }
         },
-        "/users/login": {
+        "/user/login": {
             "post": {
                 "summary": "Login with a already created user",
                 "tags": ["Users"],
@@ -77,7 +77,7 @@
                 }
             }
         },
-        "/citys/create": {
+        "/city/create": {
             "post": {
                 "summary": "Create dataBase with cities name",
                 "tags": ["Cities"],
@@ -186,7 +186,7 @@
                 }
             }
         },
-        "/citys": {
+        "/city": {
             "get": {
                 "summary": "Get all cities Data",
                 "tags": ["Cities"],
