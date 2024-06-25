@@ -1,21 +1,16 @@
-const mysql = require('../mysql');
+const cityModel = require("../models/city-model");
 
 exports.createCitys = async (req, res, next) => {
     try {
-        const queryDelete = 'DELETE FROM citys;';
-        await mysql.execute(queryDelete);
+        await cityModel.deleteAll();
 
         const citys = req.body.citys.map(city => [
             parseFloat(city.lat),
             parseFloat(city.lng),
             city.city + ' - ' + city.admin_name
         ])
+        await cityModel.createByList(citys)
 
-        const queryInsert = 'INSERT INTO citys (citys.lat,citys.long,citys.name) VALUES ?;';
-        await mysql.execute(
-            queryInsert,
-            [citys]
-        );
         const response = {
             message: "success",
             data: {
@@ -37,8 +32,8 @@ exports.createCitys = async (req, res, next) => {
 
 exports.getCitys = async (req, res, next) => {
     try {
-        const query = 'SELECT * FROM citys';
-        const result = await mysql.execute(query);
+
+        const result = await cityModel.getAll();
         const response = {
             message: "success",
             data: {

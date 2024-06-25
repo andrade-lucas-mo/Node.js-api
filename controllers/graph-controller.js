@@ -1,9 +1,9 @@
-const mysql = require('../mysql');
+const cityModel = require("../models/city-model");
+const edgeModel = require("../models/edge-model");
 
 exports.createGraph = async (req, res, next) => {
     try {
-        const query = 'SELECT * FROM citys;';
-        const citys = await mysql.execute(query);
+        const citys = cityModel.getAll();
         var dist = 0;
         var edgeList = [];
 
@@ -45,14 +45,9 @@ exports.createGraph = async (req, res, next) => {
 
         });
 
-        const queryDelete = 'DELETE FROM edge;';
-        await mysql.execute(queryDelete);
+        edgeModel.deleteAll();
+        edgeModel.createByList(edgeList);
 
-        const queryInsert = 'INSERT INTO edge (edge.from,edge.to,edge.weight) VALUES ?;';
-        await mysql.execute(
-            queryInsert,
-            [edgeList]
-        );
         const response = {
             message: "success",
             data: {
@@ -85,27 +80,12 @@ exports.createGraph = async (req, res, next) => {
 
 exports.getNodeData  = async (req, res, next) => {
     try {
-        var where = '';
+        var edges;
         if(req.params.node){
-            where = 'WHERE citys.id_citys = ?'
+            edges = cityModel.getWithEdgesById(req.params.node);
+        }else{
+            edges = cityModel.getWithEdges();
         }
-        const query = 
-            `SELECT
-                citys.id_citys,
-                citys.name,
-                CASE
-                    WHEN citys.name = edge.from
-                        THEN edge.to
-                    ELSE edge.from
-                END AS edge,
-                edge.id_edge,
-                edge.weight
-            FROM citys
-            INNER JOIN edge
-                ON edge.from = citys.name OR edge.to = citys.name
-            ${where}
-            ORDER BY citys.name;`;
-        const edges = await mysql.execute(query, [req.params.node]);
 
         var graph = []
 
@@ -150,53 +130,29 @@ exports.getNodeData  = async (req, res, next) => {
 exports.getSubGraph  = async (req, res, next) => {
     try {
         const params = []
-        let where = 'WHERE 1 = 1';
-        let left = ''
+        const select = {
+            edge: req.body.edges && req.body.edges.length !== 0,
+            city: false
+        };
 
-        if(req.body.edges && req.body.edges.length !== 0){
-            params.push(req.body.edges)
-            left = `
-                AND edge.id_edge NOT IN (?)
-            `
+        if(select.edge){
+            select.push(req.body.edges)
         }
         
         if(req.body.node && req.body.node.length !== 0){
-            const querycitys = 
-            `SELECT *
-            FROM citys
-            WHERE id_citys IN (?)`;
-            const citys = await mysql.execute(querycitys, [req.body.node]);
+            const citys = await cityModel.getByIdList(req.body.node)
             const name_citys = citys.map(city => {
                 return city.name
             })
             if(name_citys.length !== 0){
                 params.push(name_citys)
                 params.push(name_citys)
-                where += `
-                    AND graph.name NOT IN (?)
-                    AND graph.edge NOT IN (?)
-                `
+                select.city = true;
             }
         }
-
-        const query = 
-            `SELECT * FROM
-            (SELECT
-                citys.id_citys,
-                citys.name,
-                CASE
-                    WHEN citys.name = edge.from
-                        THEN edge.to
-                    ELSE edge.from
-                END AS edge,
-                edge.id_edge,
-                edge.weight
-            FROM citys
-            LEFT JOIN edge
-                ON (edge.from = citys.name OR edge.to = citys.name) ${left}
-            ORDER BY citys.name) graph
-            ${where};`;
-        const edges = await mysql.execute(query, params);
+        
+        const graphFunction = getGraphFunction(select);
+        const edges = await graphFunction(params);
 
         var graph = []
 
@@ -239,4 +195,15 @@ exports.getSubGraph  = async (req, res, next) => {
     } catch (error) {
         return res.status(500).send({error: error})
     }
+}
+
+function getGraphFunction(select) {
+    const key = `${select.city ? 'C' : 'N'}${select.edge ? 'E' : 'N'}`;
+    const functions = {
+        'CE': async (params) => await cityModel.getCompleteGraphWithoutEdgesAndCitysList(params),
+        'CN': async (params) => await cityModel.getCompleteGraphWithoutCitysList(params),
+        'NE': async (params) => await cityModel.getCompleteGraphWithoutEdgesList(params),
+        'NN': async (params) => await cityModel.getCompleteGraph()
+    };
+    return functions[key];
 }

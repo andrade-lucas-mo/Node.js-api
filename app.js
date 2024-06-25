@@ -1,8 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors')
-const users = require('./routes/users')
-const citys = require('./routes/citys')
+const users = require('./routes/user')
+const citys = require('./routes/city')
 const graph = require('./routes/graph')
 const search = require('./routes/search')
 const forest = require('./routes/forest')
@@ -31,8 +31,8 @@ app.use((req, res, next) => {
 
 app.use('/api-doc', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
-app.use('/users', users)
-app.use('/citys', citys)
+app.use('/user', users)
+app.use('/city', citys)
 app.use('/graph', graph)
 app.use('/search', search)
 app.use('/forest', forest)

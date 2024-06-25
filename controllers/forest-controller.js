@@ -1,23 +1,11 @@
-const mysql = require('../mysql');
+const cityModel = require("../models/city-model");
+const edgeModel = require("../models/edge-model");
+
 
 exports.minimumTree = async (req, res, next) => {
     try {
-        const query = 'SELECT citys.* FROM citys;';
-        const nodes = await mysql.execute(query);
-        const queryEdges = 
-            `SELECT
-                edge.id_edge,
-                edge.from,
-                edge.to,
-                edge.weight,
-                from_city.id_citys as from_city_id,
-                to_city.id_citys as to_city_id
-            FROM edge
-            LEFT JOIN citys from_city
-                ON edge.from = from_city.name
-            LEFT JOIN citys to_city
-                ON edge.to = to_city.name`;
-        const edges = await mysql.execute(queryEdges);
+        const nodes = await cityModel.getAll();
+        const edges = await edgeModel.getAll();
 
         const primTree = nodes.map(node => {
             return {

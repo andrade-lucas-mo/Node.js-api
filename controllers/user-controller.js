@@ -1,25 +1,14 @@
-const mysql = require('../mysql');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const userModel = require("../models/user-model");
 
 exports.singinUser = async (req, res, next) => {
     try {
-        const queryUsers = 'SELECT * FROM users WHERE name = ?;';
-        const usersSelect = await mysql.execute(
-            queryUsers,
-            [req.body.name]
-        );
+        const usersSelect = await userModel.getUserByName(req.body.name);
+
         if(usersSelect.length > 0){
             return res.status(409).send({message: "user alredy exist"})
         }
 
-        const hash = await bcrypt.hashSync(req.body.password, 10)
-
-        const queryInsert = 'INSERT INTO users (name,password) VALUES(?,?);';
-        const result = await mysql.execute(
-            queryInsert,
-            [req.body.name, hash]
-        );
+        const result = await userModel.createUser(req.body.name, req.body.password);
         const response = {
             message: "success",
             data: {
@@ -42,28 +31,16 @@ exports.singinUser = async (req, res, next) => {
 
 exports.loginUser = async (req, res, next) => {
     try {
-        const query = 'SELECT * FROM users WHERE name = ?;';
-        const result = await mysql.execute(
-            query,
-            [req.body.name]
-        );
+        const result = await userModel.getUserByName(req.body.name);
         if(result.length < 1) {
             return res.status(401).send({message: "Unauthorized login. Check your name and password"})
         }
-        if(await bcrypt.compare(req.body.password, result[0].password)){
-            const token = jwt.sign(
-                {
-                    id_users: result[0].id_users,
-                    name: result[0].name,
-                }, 
-                process.env.JWT_KEY,
-                {
-                    expiresIn: "1h"
-                }
-            )
+
+        const validate = await userModel.validateHash(req.body.password, result[0].password);
+        if(validate){
             const response = {
                 message: "Authorized",
-                token: token
+                token: validate
             };
             return res.status(200).send(response)
         }

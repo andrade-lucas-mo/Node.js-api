@@ -1,11 +1,11 @@
-const mysql = require('../mysql');
+const cityModel = require("../models/city-model");
+const edgeMode = require("../models/edge-model");
 
 exports.searchDepth = async (req, res, next) => {
     try {
         time = 0
-        const query = 'SELECT citys.* FROM citys;';
-        const nodes = await mysql.execute(query);
-        const edges = await getEdgesData();
+        const nodes = await cityModel.getAll();
+        const edges = await edgeMode.getGraph();
         root = 0;
         forest = edges.graph;
         var depth = nodes.map(node => {
@@ -50,9 +50,8 @@ exports.searchBreadthFirst = async (req, res, next) => {
     try {
         let t = 0;
         let line = [];
-        const query = 'SELECT citys.* FROM citys;';
-        const nodes = await mysql.execute(query);
-        const edges = await getEdgesData();
+        const nodes = await cityModel.getAll();
+        const edges = await edgeMode.getGraph();
         root = 0;
         forest = edges.graph;
 
@@ -115,54 +114,6 @@ exports.searchBreadthFirst = async (req, res, next) => {
 var time = 0;
 let forest = []
 let root = 0;
-
-async function getEdgesData(){
-    try {
-        const query = 
-            `SELECT
-                citys.id_citys,
-                citys.name,
-                CASE
-                    WHEN citys.name = edge.from
-                        THEN edge.to
-                    ELSE edge.from
-                END AS edge,
-                edge.id_edge,
-                edge.weight
-            FROM citys
-            INNER JOIN edge
-                ON edge.from = citys.name OR edge.to = citys.name
-            ORDER BY citys.name;`;
-        const edges = await mysql.execute(query);
-
-        var graph = []
-
-        edges.forEach(edge => {
-            if(graph.findIndex(val => val.node === edge.name) < 0){
-                var edg = edges.map(edg => {
-                    if(edg.name === edge.name){
-                        return {
-                            id_edge: edg.id_edge,
-                            to: edg.edge,
-                            weight: edg.weight
-                        }
-                    }
-                })
-                edg = edg.filter(function (i) {return i;});
-                graph.push({
-                    id_node: edge.id_citys,
-                    node: edge.name,
-                    degree: edg.length,
-                    edges: edg
-                })
-            }
-        });
-        return {graph: graph}
-    } catch (error) {
-        return error
-    }
-    
-}
 
 function depthSearch(nodes, edges, v)
 {
